@@ -6,22 +6,42 @@ import type * as Types from '@app/types.ts'
  */
 export default class Tool {
   /**
-   * Register tool and return executable plugin.
+   * Register tool definition.
    * @description Builds schema and wraps handler with abort support.
    * @param config - Tool definition options
-   * @returns Plugin exposing schema and execute function
+   * @returns Plugin exposing schemas and execute function
    */
   static define(config: Types.ToolDefineOptions): Types.ToolPlugin {
-    const schema: Types.ToolDef = {
+    const parameters = config.parameters ?? { type: 'object', properties: {} }
+    const toOpenAI = (): Types.ToolOpenAIDef => ({
       type: 'function',
       function: {
         name: config.name,
-        description: config.description,
-        parameters: config.parameters ?? { type: 'object', properties: {} }
+        ...(config.description !== undefined ? { description: config.description } : {}),
+        parameters,
+        ...(config.strict !== undefined ? { strict: config.strict } : {})
       }
-    }
+    })
+    const toAnthropic = (): Types.ToolAnthropicDef => ({
+      name: config.name,
+      ...(config.description !== undefined ? { description: config.description } : {}),
+      input_schema: parameters,
+      ...(config.input_examples !== undefined ? { input_examples: config.input_examples } : {}),
+      ...(config.strict !== undefined ? { strict: config.strict } : {}),
+      ...(config.cache_control !== undefined ? { cache_control: config.cache_control } : {})
+    })
+    const toFlatFunction = (): Types.ToolFlatFunctionDef => ({
+      name: config.name,
+      ...(config.description !== undefined ? { description: config.description } : {}),
+      parameters,
+      ...(config.strict !== undefined ? { strict: config.strict } : {})
+    })
+    const schema = toOpenAI()
     return {
       schema,
+      toAnthropic,
+      toOpenAI,
+      toFlatFunction,
       execute: async (
         input: Record<string, unknown>,
         signal?: AbortSignal,
