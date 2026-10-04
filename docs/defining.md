@@ -20,12 +20,15 @@ const plugin: ToolPlugin = Tool.define({
 })
 ```
 
-| Property      | Type            | Required | Description                                                                        |
-| :------------ | :-------------- | :------- | :--------------------------------------------------------------------------------- |
-| `name`        | `string`        | Yes      | Function name that the model will call                                             |
-| `description` | `string`        | Yes      | Plain text explanation that the model reads                                        |
-| `parameters`  | `ToolSchema`    | No       | JSON Schema object for arguments, defaults to `{ type: 'object', properties: {} }` |
-| `execute`     | `ToolExecuteFn` | Yes      | The function that runs when the tool is called                                     |
+| Property         | Type                                              | Required | Description                                                                        |
+| :--------------- | :------------------------------------------------ | :------- | :--------------------------------------------------------------------------------- |
+| `name`           | `string`                                          | Yes      | Function name that the model will call                                             |
+| `description`    | `string`                                          | No       | Plain text explanation that the model reads                                        |
+| `parameters`     | `ToolSchema`                                      | No       | JSON Schema object for arguments, defaults to `{ type: 'object', properties: {} }` |
+| `strict`         | `boolean`                                         | No       | Enforce strict schema compliance for structured outputs                            |
+| `input_examples` | `readonly Record<string, unknown>[] \| undefined` | No       | Optional example payloads for Anthropic tool definitions                           |
+| `cache_control`  | `ToolAnthropicCacheControl \| undefined`          | No       | Optional ephemeral prompt cache control for Anthropic                              |
+| `execute`        | `ToolExecuteFn`                                   | Yes      | The function that runs when the tool is called                                     |
 
 When `parameters` is omitted, the wrapper fills in `{ type: 'object', properties: {} }` so the resulting schema is always a valid JSON Schema object.
 

@@ -64,10 +64,13 @@ The package exports a default class `Tool` and re-exports every interface and ty
 
 ## ToolPlugin Shape
 
-| Property  | Type                                             | Description                                               |
-| :-------- | :----------------------------------------------- | :-------------------------------------------------------- |
-| `schema`  | `ToolDef`                                        | JSON Schema description of the tool                       |
-| `execute` | `(input, signal?, emit?) => Promise<ToolResult>` | Call the tool with input and optional signal and callback |
+| Property         | Type                                             | Description                                               |
+| :--------------- | :----------------------------------------------- | :-------------------------------------------------------- |
+| `schema`         | `ToolOpenAIDef`                                  | Default OpenAI JSON Schema description of the tool        |
+| `toOpenAI`       | `() => ToolOpenAIDef`                            | Formats tool definition to OpenAI nested structure        |
+| `toAnthropic`    | `() => ToolAnthropicDef`                         | Formats tool definition to Anthropic Messages API format  |
+| `toFlatFunction` | `() => ToolFlatFunctionDef`                      | Formats tool definition to OpenAI legacy / flat function  |
+| `execute`        | `(input, signal?, emit?) => Promise<ToolResult>` | Call the tool with input and optional signal and callback |
 
 The `schema` value is always the `ToolOpenAIDef` shape at runtime even though the static type is the wider `ToolDef` union. The wrapper always emits the nested `function` form because every API can read it as is, and the consumer can convert to the `ToolFlatFunctionDef` or `ToolAnthropicDef` form when needed.
 
