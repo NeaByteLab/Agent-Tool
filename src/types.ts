@@ -1,138 +1,207 @@
 /**
- * Anthropic tool definition shape.
- * @description Maps function name to input schema with optional examples.
+ * Anthropic cache control descriptor.
+ * @description Configures ephemeral prompt caching headers.
  */
-export interface ToolAnthropicDef extends ToolFunctionCore {
-  /** JSON schema describing accepted arguments */
-  readonly input_schema: ToolSchema
+export interface ToolAnthropicCacheControl {
+  /** Type of cache control */
+  readonly type: 'ephemeral'
+}
+
+/**
+ * Anthropic tool definition shape.
+ * @description Maps function name to input schema.
+ */
+export interface ToolAnthropicDef {
+  /** Optional cache control configuration */
+  readonly cache_control?: ToolAnthropicCacheControl
+  /** Human-readable purpose description */
+  readonly description?: string
   /** Sample payloads demonstrating valid input */
   readonly input_examples?: readonly Record<string, unknown>[]
-}
-
-/**
- * Tool definition options for registration.
- * @description Holds name, description, schema, and execute handler.
- */
-export interface ToolDefineOptions {
+  /** JSON schema describing accepted arguments */
+  readonly input_schema: ToolSchema
   /** Unique tool identifier */
   readonly name: string
-  /** Human-readable purpose description */
-  readonly description: string
-  /** JSON schema for arguments */
-  readonly parameters?: ToolSchema
-  /** Sync or async handler invoked on call */
-  readonly execute: ToolExecuteFn
+  /** Whether strict schema compliance enforced */
+  readonly strict?: boolean
 }
 
 /**
- * Flat OpenAI tool definition shape.
- * @description Places function fields at top level for legacy format.
+ * Tool definition options.
+ * @description Holds metadata and execution handler.
  */
-export interface ToolFlatFunctionDef extends ToolFunctionCore {
-  /** Fixed discriminator marking function tool */
-  readonly type: 'function'
+export interface ToolDefineOptions {
+  /** Optional Anthropic cache control */
+  readonly cache_control?: ToolAnthropicCacheControl
+  /** Human-readable purpose description */
+  readonly description?: string
+  /** Sync or async execute handler */
+  readonly execute: ToolExecuteFn
+  /** Optional Anthropic input examples */
+  readonly input_examples?: readonly Record<string, unknown>[]
+  /** Unique tool identifier */
+  readonly name: string
+  /** JSON schema for arguments */
+  readonly parameters?: ToolSchema
+  /** Whether strict adherence is enforced */
+  readonly strict?: boolean
 }
+
+/**
+ * Flat OpenAI function definition.
+ * @description Legacy function shape without wrapper.
+ */
+export interface ToolFlatFunctionDef extends ToolFunctionCore {}
 
 /**
  * Core tool function fields.
- * @description Shared name, description, and parameter schema.
+ * @description Shared descriptor fields for functions.
  */
 export interface ToolFunctionCore {
+  /** Human-readable purpose description */
+  readonly description?: string
   /** Unique tool identifier */
   readonly name: string
-  /** Human-readable purpose description */
-  readonly description: string
   /** JSON schema for arguments */
   readonly parameters: ToolSchema
+  /** Whether strict compliance is required */
+  readonly strict?: boolean
 }
 
 /**
- * Nested OpenAI tool definition shape.
- * @description Wraps function fields inside function property.
+ * Nested OpenAI tool definition.
+ * @description Wraps function fields inside object.
  */
 export interface ToolOpenAIDef {
-  /** Fixed discriminator marking function tool */
-  readonly type: 'function'
   /** Nested function descriptor */
   readonly function: ToolFunctionCore
+  /** Fixed discriminator marking function tool */
+  readonly type: 'function'
 }
 
 /**
- * Registered tool instance returned from define.
- * @description Exposes schema for model binding and execute for invocation.
+ * Registered tool instance.
+ * @description Exposes schema formats and executor.
  */
 export interface ToolPlugin {
-  /** Schema representation in supported union variants */
-  readonly schema: ToolDef
-  /** Invoke handler with input and optional signal */
+  /**
+   * Invoke handler with input.
+   * @description Executes registered tool handler with payload.
+   * @param input - Input arguments map
+   * @param signal - Optional abort signal
+   * @param emit - Optional event callback
+   * @returns Promise resolving execution result
+   */
   readonly execute: (
     input: Record<string, unknown>,
     signal?: AbortSignal,
     emit?: ToolEventCallback
   ) => Promise<ToolResult>
+  /** OpenAI schema representation */
+  readonly schema: ToolOpenAIDef
+  /** Convert to Anthropic format */
+  readonly toAnthropic: () => ToolAnthropicDef
+  /** Convert to flat format */
+  readonly toFlatFunction: () => ToolFlatFunctionDef
+  /** Convert to OpenAI format */
+  readonly toOpenAI: () => ToolOpenAIDef
 }
 
 /**
- * Single property descriptor inside tool schema.
- * @description Holds type, description, enum, and default value.
+ * Property descriptor in schema.
+ * @description Defines type constraints and descriptors.
  */
 export interface ToolPropertySchema {
-  /** JSON schema type name */
-  readonly type: string
+  /** Additional properties restriction */
+  readonly additionalProperties?: boolean | ToolPropertySchema
+  /** All matching schema requirements */
+  readonly allOf?: readonly ToolPropertySchema[]
+  /** Any matching schema options */
+  readonly anyOf?: readonly ToolPropertySchema[]
+  /** Default value when omitted */
+  readonly default?: unknown
   /** Human-readable field description */
   readonly description?: string
-  /** Allowed string values when applicable */
-  readonly enum?: readonly string[]
-  /** Default value when omitted */
-  readonly default?: string
+  /** Allowed enum values */
+  readonly enum?: readonly (string | number | boolean | null)[]
+  /** Schema for array items */
+  readonly items?: ToolPropertySchema | Record<string, unknown>
+  /** Maximum numeric value */
+  readonly maximum?: number
+  /** Minimum numeric value */
+  readonly minimum?: number
+  /** Whether property permits null */
+  readonly nullable?: boolean
+  /** Exactly one matching schema */
+  readonly oneOf?: readonly ToolPropertySchema[]
+  /** String pattern regex */
+  readonly pattern?: string
+  /** Nested properties for objects */
+  readonly properties?: Record<string, ToolPropertySchema>
+  /** Required fields for objects */
+  readonly required?: readonly string[]
+  /** JSON schema type name */
+  readonly type?: ToolPropertyType
 }
 
 /**
- * Standardized tool execution result.
- * @description Carries success flag, payload, and human-readable text.
+ * Tool execution result payload.
+ * @description Standard outcome from tool execution.
  */
 export interface ToolResult {
+  /** Structured payload on success */
+  json: Record<string, unknown> | null
   /** True when handler succeeded */
   success: boolean
-  /** Structured payload or null on failure */
-  json: Record<string, unknown> | null
-  /** Human-readable output or null on failure */
+  /** Human-readable output text */
   text: string | null
 }
 
 /**
- * JSON schema describing tool arguments.
- * @description Object schema with typed properties and optional constraints.
+ * JSON schema for arguments.
+ * @description Object schema declaring properties constraints.
  */
 export interface ToolSchema {
-  /** Schema type, always object here */
-  readonly type: string
-  /** Map of property name to descriptor */
-  readonly properties: Record<string, ToolPropertySchema>
-  /** Required property names */
-  readonly required?: readonly string[]
-  /** Whether extra properties are allowed */
+  /** Extra properties allowed flag */
   readonly additionalProperties?: boolean
+  /** Map of property descriptors */
+  readonly properties: Record<string, ToolPropertySchema>
+  /** Required property names list */
+  readonly required?: readonly string[]
+  /** Schema object type discriminator */
+  readonly type: 'object'
 }
 
-/**
- * Union of supported tool definition variants.
- * @description Discriminates OpenAI nested, OpenAI flat, and Anthropic shapes.
- */
-export type ToolDef = ToolOpenAIDef | ToolFlatFunctionDef | ToolAnthropicDef
+/** Supported tool definition variants. */
+export type ToolDef = ToolAnthropicDef | ToolFlatFunctionDef | ToolOpenAIDef
 
 /**
- * Streaming event emitter callback type.
- * @description Receives arbitrary payloads during async execution.
+ * Streaming event callback handler.
+ * @description Receives event payload during execution.
+ * @param event - Arbitrary event payload
  */
 export type ToolEventCallback = (event: unknown) => void
 
 /**
- * Tool handler signature.
- * @description Accepts input and optional signal plus emitter.
+ * Tool handler execution function.
+ * @description Synchronous or asynchronous tool handler.
+ * @param input - Input arguments map
+ * @param signal - Optional abort signal
+ * @param emit - Optional event callback
+ * @returns Execution result outcome
  */
 export type ToolExecuteFn = (
   input: Record<string, unknown>,
   signal?: AbortSignal,
   emit?: ToolEventCallback
 ) => ToolResult | Promise<ToolResult>
+
+/** Primitive JSON schema types. */
+export type ToolPropertyType =
+  | 'string'
+  | 'number'
+  | 'integer'
+  | 'boolean'
+  | 'array'
+  | 'object'
+  | 'null'
