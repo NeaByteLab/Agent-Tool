@@ -4,15 +4,38 @@
 
 Helper that wraps functions into agent tool plugin instances
 
+[![Deno](https://img.shields.io/badge/deno-compatible-ffcb00?logo=deno&logoColor=000000)](https://deno.com) [![Node](https://img.shields.io/badge/node-%3E%3D24-6DA55F?logo=node.js&logoColor=white)](https://nodejs.org) [![Bun](https://img.shields.io/badge/bun-compatible-f9f1e1?logo=bun&logoColor=000000)](https://bun.sh) [![Browser](https://img.shields.io/badge/browser-compatible-4285F4?logo=googlechrome&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+
 </div>
 
 ## Installation
 
-**Clone Repository**
+**Deno:**
 
 ```bash
-git clone https://github.com/NeaByteLab/Agent-Tool.git
-cd Agent-Tool
+deno add npm:@neabyte/agent-tool
+```
+
+**npm:**
+
+```bash
+npm install @neabyte/agent-tool
+```
+
+**CDN (jsDelivr/esm.sh):**
+
+```html
+<script type="module">
+  import Tool from 'https://cdn.jsdelivr.net/npm/@neabyte/agent-tool/dist/index.mjs'
+</script>
+```
+
+Or via [esm.sh](https://esm.sh):
+
+```html
+<script type="module">
+  import Tool from 'https://esm.sh/@neabyte/agent-tool'
+</script>
 ```
 
 ## Quick Start
@@ -83,4 +106,4 @@ deno task test
 
 ## License
 
-This project is proprietary software. See the [LICENSE](LICENSE) file for licensing terms.
+Code in this repository is licensed under [Apache 2.0](./LICENSE), documentation is licensed under [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/).
