@@ -47,7 +47,8 @@ export default class Tool {
         signal?: AbortSignal,
         emit?: Types.ToolEventCallback
       ): Promise<Types.ToolResult> => {
-        const abortText = (): string => (signal?.reason ? String(signal.reason) : 'Aborted')
+        const abortText =
+          (): string => (signal?.reason !== undefined ? String(signal.reason) : 'Aborted')
         const aborted = (): Types.ToolResult => ({
           success: false,
           json: null,
@@ -56,23 +57,24 @@ export default class Tool {
         if (signal?.aborted) {
           return aborted()
         }
+        let abortListener: (() => void) | undefined
         try {
           const output = config.execute(input, signal, emit)
-          const outcome = output instanceof Promise
-            ? signal
-              ? await Promise.race([
-                output,
-                new Promise<never>((_, reject) => {
-                  const trigger = () => reject(new DOMException(abortText(), 'AbortError'))
-                  if (signal.aborted) {
-                    trigger()
-                    return
-                  }
-                  signal.addEventListener('abort', trigger, { once: true })
-                })
-              ])
-              : await output
-            : output
+          let racePromise: Promise<Types.ToolResult> | undefined
+          if (output instanceof Promise && signal) {
+            racePromise = Promise.race([
+              output,
+              new Promise<never>((_, reject) => {
+                abortListener = () => reject(new DOMException(abortText(), 'AbortError'))
+                if (signal.aborted) {
+                  abortListener()
+                  return
+                }
+                signal.addEventListener('abort', abortListener, { once: true })
+              })
+            ])
+          }
+          const outcome = racePromise ? await racePromise : await output
           if (signal?.aborted) {
             return aborted()
           }
@@ -85,6 +87,10 @@ export default class Tool {
             success: false,
             json: null,
             text: cause instanceof Error ? cause.message : String(cause)
+          }
+        } finally {
+          if (signal && abortListener) {
+            signal.removeEventListener('abort', abortListener)
           }
         }
       }
