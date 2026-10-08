@@ -3,7 +3,7 @@
   "description": "Helper that wraps functions into agent tool plugin instances",
   "version": "0.1.0",
   "type": "module",
-  "license": "Proprietary",
+  "license": "Apache-2.0",
   "exports": "./src/index.ts",
   "compilerOptions": {
     "allowUnreachableCode": false,
