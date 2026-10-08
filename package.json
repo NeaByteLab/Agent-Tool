@@ -1,0 +1,73 @@
+{
+  "name": "@neabyte/agent-tool",
+  "description": "Helper that wraps functions into agent tool plugin instances",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "unbuild --minify",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "rm -rf dist && npm run build"
+  },
+  "keywords": [
+    "abort-signal",
+    "agent-framework",
+    "agent-tools",
+    "ai",
+    "ai-agents",
+    "anthropic",
+    "chat-completion",
+    "function-calling",
+    "function-schemas",
+    "json-schema",
+    "llm",
+    "llm-tools",
+    "openai",
+    "prompt-engineering",
+    "schema-validation",
+    "sdk",
+    "streaming",
+    "tool-plugin",
+    "tool-use",
+    "tools"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@typescript/typescript6": "^6.0.2",
+    "unbuild": "^3.6.1"
+  },
+  "author": {
+    "name": "NeaByteLab",
+    "email": "me@neabyte.com",
+    "url": "https://github.com/NeaByteLab"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NeaByteLab/Agent-Tool.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NeaByteLab/Agent-Tool/issues"
+  },
+  "homepage": "https://github.com/NeaByteLab/Agent-Tool#readme",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
